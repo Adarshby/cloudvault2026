@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-&qf3d+*xo)y_dwxnhyh=@e9ng*r3^uc+4wvntw1vadi+k&#15y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["cloudvault2026.onrender.com"]
 
