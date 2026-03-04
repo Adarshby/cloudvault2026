@@ -65,19 +65,24 @@
 
                         <td>{{ file.file.name }}</td>
 
-                        <td>{{ file.file.size|filesizeformat }}</td>
+                        <!-- SAFE FILE SIZE -->
+                        <td>
+                        {% if file.file %}
+                            {{ file.file.size|filesizeformat }}
+                        {% else %}
+                            Missing
+                        {% endif %}
+                        </td>
 
                         <td>{{ file.download_count }}</td>
 
                         <td>{{ file.uploaded_at }}</td>
 
                         <td>
-
                             <a href="{% url 'download_file' file.id %}"
                                class="btn btn-success btn-sm">
                                Download
                             </a>
-
                         </td>
 
                     </tr>
