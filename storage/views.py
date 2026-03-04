@@ -8,9 +8,20 @@ from django.db.models import Sum
 
 
 
+from django.db.models import Sum
+
 @login_required
 def dashboard(request):
+
     files = File.objects.filter(user=request.user)
+
+    # calculate storage used
+    total_size = sum(file.file.size for file in files if file.file)
+
+    # example quota: 100 MB
+    quota = 100 * 1024 * 1024
+
+    storage_used_percent = int((total_size / quota) * 100) if quota > 0 else 0
 
     if request.method == "POST":
         uploaded_file = request.FILES.get('file')
@@ -18,7 +29,10 @@ def dashboard(request):
             File.objects.create(user=request.user, file=uploaded_file)
             return redirect('dashboard')
 
-    return render(request, 'dashboard.html', {'files': files})
+    return render(request, "dashboard.html", {
+        "files": files,
+        "storage_used_percent": storage_used_percent
+    })
 from django.http import FileResponse, Http404
 import os
 from django.conf import settings

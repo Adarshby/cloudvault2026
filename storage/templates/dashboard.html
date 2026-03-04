@@ -68,8 +68,9 @@ Logout
 
 <div class="progress storage-bar">
 
-<div class="progress-bar bg-success" style="width:40%">
-40%
+<div class="progress-bar bg-success"
+style="width: {{ storage_used_percent }}%">
+{{ storage_used_percent }}%
 </div>
 
 </div>
@@ -152,10 +153,7 @@ class="btn btn-success btn-sm">
 Download
 </a>
 
-<a href="{% url 'share_download' file.share_token %}"
-class="btn btn-info btn-sm">
-Share
-</a>
+
 
 </td>
 
