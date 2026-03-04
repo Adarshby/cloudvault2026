@@ -46,3 +46,17 @@ def delete_file(request, file_id):
     file_obj = File.objects.get(id=file_id, user=request.user)
     file_obj.delete()
     return redirect('dashboard')
+
+from django.contrib.auth.forms import UserCreationForm
+from django.shortcuts import render, redirect
+
+def register(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = UserCreationForm()
+
+    return render(request, "registration/register.html", {"form": form})
