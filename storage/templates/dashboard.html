@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <title>CloudVault</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -26,11 +25,6 @@ cursor:pointer;
 background:#eef3ff;
 }
 
-.file-icon{
-font-size:22px;
-margin-right:8px;
-}
-
 .storage-bar{
 height:20px;
 }
@@ -48,11 +42,22 @@ height:20px;
 <h2>☁️ CloudVault</h2>
 
 <div>
-{{ request.user.username }}
-<a href="/accounts/logout/" class="btn btn-outline-danger btn-sm ms-3">Logout</a>
+
+<b>{{ request.user.username }}</b>
+
+<!-- LOGOUT FORM -->
+
+<form action="/accounts/logout/" method="post" style="display:inline;">
+{% csrf_token %}
+<button class="btn btn-outline-danger btn-sm ms-3">
+Logout
+</button>
+</form>
+
 </div>
 
 </div>
+
 
 <!-- STORAGE METER -->
 
@@ -63,11 +68,8 @@ height:20px;
 
 <div class="progress storage-bar">
 
-<div class="progress-bar bg-success"
-style="width: {{ storage_used|default:0 }}%">
-
-{{ storage_used|filesizeformat }}
-
+<div class="progress-bar bg-success" style="width:40%">
+40%
 </div>
 
 </div>
@@ -76,7 +78,7 @@ style="width: {{ storage_used|default:0 }}%">
 </div>
 
 
-<!-- DRAG DROP -->
+<!-- DRAG DROP UPLOAD -->
 
 <div class="upload-box mb-4">
 
@@ -102,7 +104,7 @@ Upload
 </div>
 
 
-<!-- FILE LIST -->
+<!-- FILE TABLE -->
 
 <div class="card">
 <div class="card-body">
@@ -129,22 +131,14 @@ Upload
 
 <tr>
 
-<td>
-
-<span class="file-icon">📄</span>
-
-{{ file.file.name }}
-
-</td>
+<td>{{ file.file.name }}</td>
 
 <td>
-
 {% if file.file %}
 {{ file.file.size|filesizeformat }}
 {% else %}
 Missing
 {% endif %}
-
 </td>
 
 <td>{{ file.download_count }}</td>
@@ -156,6 +150,11 @@ Missing
 <a href="{% url 'download_file' file.id %}"
 class="btn btn-success btn-sm">
 Download
+</a>
+
+<a href="{% url 'share_download' file.share_token %}"
+class="btn btn-info btn-sm">
+Share
 </a>
 
 </td>
@@ -170,7 +169,7 @@ Download
 
 {% else %}
 
-<p class="text-muted mt-3">No files uploaded</p>
+<p>No files uploaded</p>
 
 {% endif %}
 
@@ -178,28 +177,6 @@ Download
 </div>
 
 </div>
-
-<script>
-
-// drag drop
-
-const box=document.querySelector(".upload-box")
-
-box.addEventListener("dragover",e=>{
-e.preventDefault()
-box.style.background="#eef3ff"
-})
-
-box.addEventListener("dragleave",()=>{
-box.style.background="white"
-})
-
-box.addEventListener("drop",e=>{
-e.preventDefault()
-document.getElementById("fileInput").files=e.dataTransfer.files
-})
-
-</script>
 
 </body>
 </html>
