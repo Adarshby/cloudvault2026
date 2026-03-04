@@ -1,7 +1,17 @@
-<h2>Login</h2>
+<h2>CloudVault Login</h2>
 
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    
+    <label>Username:</label>
+    <input type="text" name="username">
+
+    <br><br>
+
+    <label>Password:</label>
+    <input type="password" name="password">
+
+    <br><br>
+
     <button type="submit">Login</button>
 </form>

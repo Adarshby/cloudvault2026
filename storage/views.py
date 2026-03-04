@@ -40,3 +40,9 @@ def download_file(request, file_id):
 
     file_path = file_obj.file.path
     return FileResponse(open(file_path, 'rb'), as_attachment=True)
+
+@login_required
+def delete_file(request, file_id):
+    file_obj = File.objects.get(id=file_id, user=request.user)
+    file_obj.delete()
+    return redirect('dashboard')
