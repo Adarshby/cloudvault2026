@@ -4,6 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import File, AccessLog
+from django.db.models import Sum
+
+
 
 @login_required
 def dashboard(request):
@@ -60,3 +63,23 @@ def register(request):
         form = UserCreationForm()
 
     return render(request, "registration/register.html", {"form": form})
+
+@login_required
+def dashboard(request):
+
+    files = File.objects.filter(user=request.user)
+
+    # calculate storage usage
+    storage_used = files.aggregate(total=Sum('file'))['total'] or 0
+
+    if request.method == "POST":
+        uploaded_file = request.FILES.get('file')
+        if uploaded_file:
+            File.objects.create(user=request.user, file=uploaded_file)
+            return redirect('dashboard')
+
+    return render(request,'dashboard.html',{
+        'files':files,
+        'storage_used':storage_used
+    })
+
