@@ -22,8 +22,8 @@ def dashboard(request):
     for file in files:
         try:
             if file.file and os.path.exists(file.file.path):
-                total_size += file.file.size
-        except:
+                total_size += os.path.getsize(file.file.path)
+        except Exception:
             pass
 
     quota = 100 * 1024 * 1024
@@ -36,7 +36,7 @@ def dashboard(request):
 
     if request.method == "POST":
 
-        uploaded_file = request.FILES.get('file')
+        uploaded_file = request.FILES.get("file")
 
         if uploaded_file:
 
@@ -45,14 +45,18 @@ def dashboard(request):
                 file=uploaded_file
             )
 
-            return redirect('dashboard')
+            return redirect("dashboard")
 
-    return render(request, "dashboard.html", {
-        "files": files,
-        "storage_used_percent": storage_used_percent,
-        "used_mb": used_mb,
-        "quota_mb": quota_mb
-    })
+    return render(
+        request,
+        "dashboard.html",
+        {
+            "files": files,
+            "storage_used_percent": storage_used_percent,
+            "used_mb": used_mb,
+            "quota_mb": quota_mb,
+        },
+    )
 
 
 # ----------------------------
@@ -64,7 +68,6 @@ def download_file(request, file_id):
 
     try:
         file_obj = File.objects.get(id=file_id)
-
     except File.DoesNotExist:
         raise Http404("File not found")
 
@@ -82,7 +85,10 @@ def download_file(request, file_id):
     file_obj.download_count += 1
     file_obj.save()
 
-    return FileResponse(open(file_obj.file.path, 'rb'), as_attachment=True)
+    return FileResponse(
+        open(file_obj.file.path, "rb"),
+        as_attachment=True
+    )
 
 
 # ----------------------------
@@ -92,17 +98,17 @@ def download_file(request, file_id):
 @login_required
 def delete_file(request, file_id):
 
-    file_obj = File.objects.get(
-        id=file_id,
-        user=request.user
-    )
+    try:
+        file_obj = File.objects.get(id=file_id, user=request.user)
+    except File.DoesNotExist:
+        raise Http404("File not found")
 
     if file_obj.file and os.path.exists(file_obj.file.path):
         os.remove(file_obj.file.path)
 
     file_obj.delete()
 
-    return redirect('dashboard')
+    return redirect("dashboard")
 
 
 # ----------------------------
@@ -117,12 +123,16 @@ def register(request):
 
         if form.is_valid():
             form.save()
-            return redirect('login')
+            return redirect("login")
 
     else:
         form = UserCreationForm()
 
-    return render(request, "registration/register.html", {"form": form})
+    return render(
+        request,
+        "registration/register.html",
+        {"form": form}
+    )
 
 
 # ----------------------------
@@ -133,7 +143,6 @@ def share_download(request, token):
 
     try:
         file_obj = File.objects.get(share_token=token)
-
     except File.DoesNotExist:
         raise Http404("File not found")
 
@@ -143,4 +152,7 @@ def share_download(request, token):
     file_obj.download_count += 1
     file_obj.save()
 
-    return FileResponse(open(file_obj.file.path, 'rb'), as_attachment=True)
+    return FileResponse(
+        open(file_obj.file.path, "rb"),
+        as_attachment=True
+    )
