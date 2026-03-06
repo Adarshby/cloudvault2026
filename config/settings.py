@@ -1,7 +1,11 @@
 import dj_database_url
 import os
 from pathlib import Path
-import os
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -77,11 +81,20 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database (SQLite)
-DATABASES = {
-    "default": dj_database_url.parse(
-        os.environ.get("DATABASE_URL")
-    )
-}
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(DATABASE_URL)
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
@@ -91,6 +104,11 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
+cloudinary.config(
+    cloud_name = "dpegmn5gp",
+    api_key = "561832685216216",
+    api_secret = "lENJQqSKTgl18DbV6c-G8MeriEg"
+)
 
 
 # Internationalization

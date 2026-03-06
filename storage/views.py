@@ -3,7 +3,7 @@ import os
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-from django.http import FileResponse, Http404
+from django.http import Http404
 
 from .models import File, AccessLog
 
@@ -17,14 +17,11 @@ def dashboard(request):
 
     files = File.objects.filter(user=request.user)
 
-    total_size = 0
+    # Temporary storage calculation
+    total_files = files.count()
 
-    for file in files:
-        try:
-            if file.file and os.path.exists(file.file.path):
-                total_size += os.path.getsize(file.file.path)
-        except Exception:
-            pass
+    # Assume avg 5MB per file (Cloudinary doesn't expose size easily)
+    total_size = total_files * 5 * 1024 * 1024
 
     quota = 100 * 1024 * 1024
 
@@ -68,15 +65,15 @@ def download_file(request, file_id):
 
     try:
         file_obj = File.objects.get(id=file_id)
+
     except File.DoesNotExist:
         raise Http404("File not found")
 
+    # Security check
     if file_obj.user != request.user and not request.user.is_staff:
         raise Http404("Unauthorized")
 
-    if not os.path.exists(file_obj.file.path):
-        raise Http404("File missing on server")
-
+    # Log download
     AccessLog.objects.create(
         file=file_obj,
         accessed_by=request.user
@@ -85,10 +82,8 @@ def download_file(request, file_id):
     file_obj.download_count += 1
     file_obj.save()
 
-    return FileResponse(
-        open(file_obj.file.path, "rb"),
-        as_attachment=True
-    )
+    # Redirect to Cloudinary file URL
+    return redirect(file_obj.file.url)
 
 
 # ----------------------------
@@ -99,12 +94,13 @@ def download_file(request, file_id):
 def delete_file(request, file_id):
 
     try:
-        file_obj = File.objects.get(id=file_id, user=request.user)
+        file_obj = File.objects.get(
+            id=file_id,
+            user=request.user
+        )
+
     except File.DoesNotExist:
         raise Http404("File not found")
-
-    if file_obj.file and os.path.exists(file_obj.file.path):
-        os.remove(file_obj.file.path)
 
     file_obj.delete()
 
@@ -142,17 +138,14 @@ def register(request):
 def share_download(request, token):
 
     try:
-        file_obj = File.objects.get(share_token=token)
+        file_obj = File.objects.get(
+            share_token=token
+        )
+
     except File.DoesNotExist:
         raise Http404("File not found")
-
-    if not os.path.exists(file_obj.file.path):
-        raise Http404("File missing")
 
     file_obj.download_count += 1
     file_obj.save()
 
-    return FileResponse(
-        open(file_obj.file.path, "rb"),
-        as_attachment=True
-    )
+    return redirect(file_obj.file.url)

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import uuid
+from cloudinary.models import CloudinaryField
 
 
 class File(models.Model):
@@ -10,8 +11,8 @@ class File(models.Model):
         on_delete=models.CASCADE
     )
 
-    file = models.FileField(
-        upload_to='uploads/'
+    file = CloudinaryField(
+        'file'
     )
 
     uploaded_at = models.DateTimeField(
@@ -29,7 +30,7 @@ class File(models.Model):
     )
 
     def __str__(self):
-        return self.file.name
+        return str(self.file)
 
 
 class AccessLog(models.Model):
