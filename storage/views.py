@@ -60,6 +60,8 @@ def dashboard(request):
 # Download file
 # ----------------------------
 
+from django.shortcuts import redirect
+
 @login_required
 def download_file(request, file_id):
 
@@ -69,11 +71,9 @@ def download_file(request, file_id):
     except File.DoesNotExist:
         raise Http404("File not found")
 
-    # Security check
     if file_obj.user != request.user and not request.user.is_staff:
         raise Http404("Unauthorized")
 
-    # Log download
     AccessLog.objects.create(
         file=file_obj,
         accessed_by=request.user
@@ -82,8 +82,10 @@ def download_file(request, file_id):
     file_obj.download_count += 1
     file_obj.save()
 
-    # Redirect to Cloudinary file URL
-    return redirect(file_obj.file.url)
+    # Force download
+    download_url = file_obj.file.url.replace("/upload/", "/upload/fl_attachment/")
+
+    return redirect(download_url)
 
 
 # ----------------------------
