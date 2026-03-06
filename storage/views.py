@@ -62,12 +62,15 @@ def dashboard(request):
 
 from django.shortcuts import redirect
 
+from django.shortcuts import redirect
+from django.http import Http404
+from .models import File, AccessLog
+
 @login_required
 def download_file(request, file_id):
 
     try:
         file_obj = File.objects.get(id=file_id)
-
     except File.DoesNotExist:
         raise Http404("File not found")
 
@@ -82,11 +85,13 @@ def download_file(request, file_id):
     file_obj.download_count += 1
     file_obj.save()
 
-    # Force download
-    download_url = file_obj.file.url.replace("/upload/", "/upload/fl_attachment/")
+    # Force Cloudinary download
+    download_url = file_obj.file.url.replace(
+        "/upload/",
+        "/upload/fl_attachment/"
+    )
 
     return redirect(download_url)
-
 
 # ----------------------------
 # Delete file
@@ -140,14 +145,16 @@ def register(request):
 def share_download(request, token):
 
     try:
-        file_obj = File.objects.get(
-            share_token=token
-        )
-
+        file_obj = File.objects.get(share_token=token)
     except File.DoesNotExist:
         raise Http404("File not found")
 
     file_obj.download_count += 1
     file_obj.save()
 
-    return redirect(file_obj.file.url)
+    download_url = file_obj.file.url.replace(
+        "/upload/",
+        "/upload/fl_attachment/"
+    )
+
+    return redirect(download_url)
