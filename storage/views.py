@@ -4,6 +4,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.http import Http404
 from .models import File, AccessLog
+import requests
+from django.http import HttpResponse
+import requests
+from django.http import HttpResponse
 
 
 
@@ -62,6 +66,9 @@ def dashboard(request):
 # Download file
 # ----------------------------
 
+
+
+
 @login_required
 def download_file(request, file_id):
 
@@ -70,21 +77,26 @@ def download_file(request, file_id):
     except File.DoesNotExist:
         raise Http404("File not found")
 
-    # security check
     if file_obj.user != request.user and not request.user.is_staff:
         raise Http404("Unauthorized")
 
-    # log access
-    AccessLog.objects.create(
-        file=file_obj,
-        accessed_by=request.user
+    file_url = file_obj.file.url
+
+    response = requests.get(file_url)
+
+    filename = file_obj.file.public_id.split("/")[-1]
+
+    http_response = HttpResponse(
+        response.content,
+        content_type="application/octet-stream"
     )
+
+    http_response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
     file_obj.download_count += 1
     file_obj.save()
 
-    # redirect to Cloudinary file
-    return redirect(file_obj.file.url)
+    return http_response
 
 # ----------------------------
 # Delete file
@@ -137,6 +149,9 @@ def register(request):
 
 
 
+
+
+
 def share_download(request, token):
 
     try:
@@ -144,7 +159,20 @@ def share_download(request, token):
     except File.DoesNotExist:
         raise Http404("File not found")
 
+    file_url = file_obj.file.url
+
+    response = requests.get(file_url)
+
+    filename = file_obj.file.public_id.split("/")[-1]
+
+    http_response = HttpResponse(
+        response.content,
+        content_type="application/octet-stream"
+    )
+
+    http_response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
     file_obj.download_count += 1
     file_obj.save()
 
-    return redirect(file_obj.file.url)
+    return http_response
