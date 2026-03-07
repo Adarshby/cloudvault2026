@@ -137,9 +137,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # --------------------------------------------------
 
 cloudinary.config(
-    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
-    api_key=os.environ.get("CLOUDINARY_API_KEY"),
-    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+    cloud_name=os.environ.get("dpegmn5gp"),
+    api_key=os.environ.get("561832685216216"),
+    api_secret=os.environ.get("lENJQqSKTgl18DbV6c-G8MeriEg"),
+    secure=True
 )
 
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"

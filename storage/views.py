@@ -67,6 +67,9 @@ from django.http import Http404
 from .models import File, AccessLog
 
 @login_required
+from django.shortcuts import redirect
+
+@login_required
 def download_file(request, file_id):
 
     try:
@@ -74,9 +77,11 @@ def download_file(request, file_id):
     except File.DoesNotExist:
         raise Http404("File not found")
 
+    # security check
     if file_obj.user != request.user and not request.user.is_staff:
         raise Http404("Unauthorized")
 
+    # log access
     AccessLog.objects.create(
         file=file_obj,
         accessed_by=request.user
@@ -85,13 +90,8 @@ def download_file(request, file_id):
     file_obj.download_count += 1
     file_obj.save()
 
-    # Force Cloudinary download
-    download_url = file_obj.file.url.replace(
-        "/upload/",
-        "/upload/fl_attachment/"
-    )
-
-    return redirect(download_url)
+    # redirect to Cloudinary file
+    return redirect(file_obj.file.url)
 
 # ----------------------------
 # Delete file
@@ -142,6 +142,8 @@ def register(request):
 # Share download link
 # ----------------------------
 
+from django.shortcuts import redirect
+
 def share_download(request, token):
 
     try:
@@ -152,9 +154,4 @@ def share_download(request, token):
     file_obj.download_count += 1
     file_obj.save()
 
-    download_url = file_obj.file.url.replace(
-        "/upload/",
-        "/upload/fl_attachment/"
-    )
-
-    return redirect(download_url)
+    return redirect(file_obj.file.url)
