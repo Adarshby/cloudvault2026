@@ -6,14 +6,12 @@ from cloudinary.models import CloudinaryField
 
 class File(models.Model):
 
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     file = CloudinaryField("file")
 
-    # store file size during upload
+    original_name = models.CharField(max_length=255, default="")
+
     file_size = models.IntegerField(default=0)
 
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -27,13 +25,7 @@ class File(models.Model):
     )
 
     def filename(self):
-        try:
-            return self.file.public_id.split("/")[-1]
-        except:
-            return "file"
-
-    def __str__(self):
-        return self.filename()
+        return self.original_name
 
 
 class AccessLog(models.Model):

@@ -32,13 +32,13 @@ def dashboard(request):
 
         if uploaded_file:
 
-            File.objects.create(
+           File.objects.create(
                 user=request.user,
-                file=uploaded_file,
-                file_size=uploaded_file.size
-            )
+                file=uploaded_file,file_size=uploaded_file.size,
+                original_name=uploaded_file.name
+)
 
-            return redirect("dashboard")
+        return redirect("dashboard")
 
     return render(
         request,
@@ -69,15 +69,21 @@ def download_file(request, file_id):
 
     file_url = file_obj.file.url
 
+    response = requests.get(file_url)
+
+    filename = file_obj.filename()
+
+    http_response = HttpResponse(
+        response.content,
+        content_type="application/octet-stream"
+    )
+
+    http_response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
     file_obj.download_count += 1
     file_obj.save()
 
-    AccessLog.objects.create(
-        file=file_obj,
-        accessed_by=request.user
-    )
-
-    return redirect(file_url)
+    return http_response
 
 
 # ----------------------------
@@ -137,7 +143,18 @@ def share_download(request, token):
 
     file_url = file_obj.file.url
 
+    response = requests.get(file_url)
+
+    filename = file_obj.filename()
+
+    http_response = HttpResponse(
+        response.content,
+        content_type="application/octet-stream"
+    )
+
+    http_response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
     file_obj.download_count += 1
     file_obj.save()
 
-    return redirect(file_url)
+    return http_response
