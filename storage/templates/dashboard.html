@@ -35,6 +35,12 @@ padding:40px;
 text-align:center;
 border-radius:10px;
 margin-bottom:25px;
+transition:0.2s;
+}
+
+.upload-box.dragover{
+border-color:green;
+background:#f0fff4;
 }
 
 .file-card{
@@ -81,6 +87,8 @@ margin-right:5px;
 
 
 
+<!-- STORAGE -->
+
 <div class="storage-box">
 
 <h6>Storage Used</h6>
@@ -104,15 +112,19 @@ style="width: {{ storage_used_percent }}%">
 
 
 
-<div class="upload-box">
+<!-- UPLOAD AREA -->
 
-<form method="post" enctype="multipart/form-data">
+<div class="upload-box" id="drop-area">
+
+<form method="post" enctype="multipart/form-data" id="uploadForm">
 
 {% csrf_token %}
 
 <input type="file" name="file" id="fileInput" hidden>
 
-<p class="mb-2">Drag files here</p>
+<p class="mb-2">Drag & Drop Files Here</p>
+
+<p id="selectedFile" class="text-muted"></p>
 
 <button class="btn btn-primary"
 onclick="document.getElementById('fileInput').click(); return false;">
@@ -213,11 +225,60 @@ Delete
 
 <script>
 
+const dropArea = document.getElementById("drop-area")
+const fileInput = document.getElementById("fileInput")
+const selectedFile = document.getElementById("selectedFile")
+const uploadForm = document.getElementById("uploadForm")
+
+// show selected file when chosen manually
+fileInput.addEventListener("change", function(){
+
+const file = this.files[0]
+
+if(file){
+selectedFile.innerText = "Selected: " + file.name
+
+// AUTO UPLOAD
+uploadForm.submit()
+
+}
+
+})
+
+// drag over
+dropArea.addEventListener("dragover", function(e){
+e.preventDefault()
+dropArea.classList.add("dragover")
+})
+
+// drag leave
+dropArea.addEventListener("dragleave", function(){
+dropArea.classList.remove("dragover")
+})
+
+// drop file
+dropArea.addEventListener("drop", function(e){
+
+e.preventDefault()
+
+dropArea.classList.remove("dragover")
+
+const files = e.dataTransfer.files
+
+fileInput.files = files
+
+selectedFile.innerText = "Uploading: " + files[0].name
+
+// AUTO UPLOAD
+uploadForm.submit()
+
+})
+
 function copyLink(link){
 
-navigator.clipboard.writeText(link);
+navigator.clipboard.writeText(link)
 
-alert("Share link copied!");
+alert("Share link copied!")
 
 }
 
