@@ -2,12 +2,15 @@ import os
 import dj_database_url
 from pathlib import Path
 import cloudinary
+import cloudinary
+
 cloudinary.config(
-    cloud_name=os.environ.get("dpegmn5gp"),
-    api_key=os.environ.get("561832685216216"),
-    api_secret=os.environ.get("lENJQqSKTgl18DbV6c-G8MeriEg"),
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
     secure=True
 )
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 # --------------------------------------------------
 # Base directory
@@ -97,14 +100,15 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # --------------------------------------------------
 
-DATABASE_URL = os.environ.get("postgresql://cloudvault_db_bxl9_user:D8DP7tcpk4QEGXok2dsFvwGTYFQJ3keR@dpg-d6linos50q8c73cqlk5g-a.oregon-postgres.render.com/cloudvault_db_bxl9")
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL:
 
     DATABASES = {
         "default": dj_database_url.parse(
             DATABASE_URL,
-            conn_max_age=600
+            conn_max_age=600,
+            ssl_require=True
         )
     }
 
@@ -144,7 +148,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
 
 
 # --------------------------------------------------
