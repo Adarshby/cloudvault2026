@@ -16,14 +16,15 @@ def dashboard(request):
 
     files = File.objects.filter(user=request.user)
 
-    # simple estimation (Cloudinary does not expose size easily)
-    total_files = files.count()
-    total_size = total_files * 5 * 1024 * 1024
+    # calculate real storage usage
+    total_size = sum(file.file_size for file in files)
 
     quota = 100 * 1024 * 1024
 
-    storage_used_percent = int((total_size / quota) * 100)
+    storage_used_percent = int((total_size / quota) * 100) if quota > 0 else 0
+
     used_mb = round(total_size / (1024 * 1024), 2)
+
     quota_mb = 100
 
     if request.method == "POST":
@@ -31,9 +32,11 @@ def dashboard(request):
         uploaded_file = request.FILES.get("file")
 
         if uploaded_file:
+
             File.objects.create(
                 user=request.user,
-                file=uploaded_file
+                file=uploaded_file,
+                file_size=uploaded_file.size
             )
 
             return redirect("dashboard")
@@ -69,7 +72,7 @@ def download_file(request, file_id):
 
     response = requests.get(file_url)
 
-    filename = f"{file_obj.file.public_id}.{file_obj.file.format}"
+    filename = file_obj.file.public_id.split("/")[-1] + "." + file_obj.file.format
 
     http_response = HttpResponse(
         response.content,
@@ -78,8 +81,15 @@ def download_file(request, file_id):
 
     http_response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
+    # increase download count
     file_obj.download_count += 1
     file_obj.save()
+
+    # log access
+    AccessLog.objects.create(
+        file=file_obj,
+        accessed_by=request.user
+    )
 
     return http_response
 
@@ -118,7 +128,11 @@ def register(request):
     else:
         form = UserCreationForm()
 
-    return render(request, "registration/register.html", {"form": form})
+    return render(
+        request,
+        "registration/register.html",
+        {"form": form}
+    )
 
 
 # ----------------------------
@@ -136,7 +150,7 @@ def share_download(request, token):
 
     response = requests.get(file_url)
 
-    filename = f"{file_obj.file.public_id}.{file_obj.file.format}"
+    filename = file_obj.file.public_id.split("/")[-1] + "." + file_obj.file.format
 
     http_response = HttpResponse(
         response.content,
