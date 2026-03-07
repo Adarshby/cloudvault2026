@@ -146,9 +146,16 @@ Upload
 
 <div class="row align-items-center">
 
+
+<!-- ICON -->
+
 <div class="col-md-1 file-icon">
 
-{% if file.file and ".jpg" in file.file.name or ".png" in file.file.name %}
+{% if file.file and ".jpg" in file.file.name %}
+🖼
+{% elif file.file and ".png" in file.file.name %}
+🖼
+{% elif file.file and ".jpeg" in file.file.name %}
 🖼
 {% elif file.file and ".pdf" in file.file.name %}
 📄
@@ -159,22 +166,24 @@ Upload
 </div>
 
 
+
+<!-- FILE INFO -->
+
 <div class="col-md-5">
 
 {% if file.file %}
-<b>{{ file.file.name }}</b>
+
+<b>{{ file.file.name|truncatechars:40 }}</b>
 
 <p class="text-muted mb-0">
-Size: 
-{% if file.file %}
-{{ file.file.size|filesizeformat }}
-{% else %}
-Missing
-{% endif %}
+Size:
+{{ file.file.size|default:"Unknown"|filesizeformat }}
 </p>
 
 {% else %}
+
 <b class="text-danger">File Missing</b>
+
 {% endif %}
 
 <p class="text-muted">
@@ -183,6 +192,9 @@ Uploaded: {{ file.uploaded_at }}
 
 </div>
 
+
+
+<!-- ACTION BUTTONS -->
 
 <div class="col-md-6 file-actions">
 
@@ -206,7 +218,7 @@ Share
 </a>
 
 <button class="btn btn-warning btn-sm"
-onclick="copyLink('{{ request.scheme }}://{{ request.get_host }}/share/{{ file.share_token }}/')">
+onclick="copyLink('{{ request.build_absolute_uri }}share/{{ file.share_token }}/')">
 Copy
 </button>
 
@@ -237,11 +249,8 @@ Delete
 <script>
 
 function copyLink(link){
-
 navigator.clipboard.writeText(link);
-
 alert("Share link copied!");
-
 }
 
 </script>
