@@ -71,6 +71,11 @@ def dashboard(request):
 
 
 
+import requests
+from django.http import HttpResponse, Http404
+from django.contrib.auth.decorators import login_required
+
+
 @login_required
 def download_file(request, file_id):
 
@@ -86,7 +91,7 @@ def download_file(request, file_id):
 
     response = requests.get(file_url)
 
-    filename = file_obj.file.name.split("/")[-1]
+    filename = f"{file_obj.file.public_id}.{file_obj.file.format}"
 
     http_response = HttpResponse(
         response.content,
@@ -165,7 +170,7 @@ def share_download(request, token):
 
     response = requests.get(file_url)
 
-    filename = file_obj.file.name.split("/")[-1]
+    filename = f"{file_obj.file.public_id}.{file_obj.file.format}"
 
     http_response = HttpResponse(
         response.content,
