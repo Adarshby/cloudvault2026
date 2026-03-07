@@ -62,9 +62,6 @@ margin-right:5px;
 
 <div class="container mt-5">
 
-
-<!-- HEADER -->
-
 <div class="header">
 
 <h3>☁ CloudVault</h3>
@@ -83,8 +80,6 @@ margin-right:5px;
 </div>
 
 
-
-<!-- STORAGE -->
 
 <div class="storage-box">
 
@@ -108,8 +103,6 @@ style="width: {{ storage_used_percent }}%">
 </div>
 
 
-
-<!-- UPLOAD -->
 
 <div class="upload-box">
 
@@ -136,8 +129,6 @@ Upload
 
 
 
-<!-- FILES -->
-
 <h5 class="mb-3">Your Files</h5>
 
 {% for file in files %}
@@ -146,18 +137,11 @@ Upload
 
 <div class="row align-items-center">
 
-
-<!-- ICON -->
-
 <div class="col-md-1 file-icon">
 
-{% if file.file and ".jpg" in file.file.name %}
+{% if file.file.format == "jpg" or file.file.format == "png" or file.file.format == "jpeg" %}
 🖼
-{% elif file.file and ".png" in file.file.name %}
-🖼
-{% elif file.file and ".jpeg" in file.file.name %}
-🖼
-{% elif file.file and ".pdf" in file.file.name %}
+{% elif file.file.format == "pdf" %}
 📄
 {% else %}
 📃
@@ -166,25 +150,13 @@ Upload
 </div>
 
 
-
-<!-- FILE INFO -->
-
 <div class="col-md-5">
 
-{% if file.file %}
-
-<b>{{ file.file.name|truncatechars:40 }}</b>
+<b>{{ file.filename|truncatechars:40 }}</b>
 
 <p class="text-muted mb-0">
-Size:
-{{ file.file.size|default:"Unknown"|filesizeformat }}
+Size: {{ file.file_size|filesizeformat }}
 </p>
-
-{% else %}
-
-<b class="text-danger">File Missing</b>
-
-{% endif %}
 
 <p class="text-muted">
 Uploaded: {{ file.uploaded_at }}
@@ -193,12 +165,7 @@ Uploaded: {{ file.uploaded_at }}
 </div>
 
 
-
-<!-- ACTION BUTTONS -->
-
 <div class="col-md-6 file-actions">
-
-{% if file.file %}
 
 <a href="{{ file.file.url }}"
 class="btn btn-info btn-sm"
@@ -218,11 +185,9 @@ Share
 </a>
 
 <button class="btn btn-warning btn-sm"
-onclick="copyLink('{{ request.build_absolute_uri }}share/{{ file.share_token }}/')">
+onclick="copyLink('{{ request.scheme }}://{{ request.get_host }}/share/{{ file.share_token }}/')">
 Copy
 </button>
-
-{% endif %}
 
 <a href="{% url 'delete_file' file.id %}"
 onclick="return confirm('Delete file?')"
@@ -249,8 +214,11 @@ Delete
 <script>
 
 function copyLink(link){
+
 navigator.clipboard.writeText(link);
+
 alert("Share link copied!");
+
 }
 
 </script>

@@ -3,7 +3,6 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse, Http404
-
 from .models import File, AccessLog
 
 
@@ -16,12 +15,12 @@ def dashboard(request):
 
     files = File.objects.filter(user=request.user)
 
-    # calculate real storage usage
+    # calculate storage usage
     total_size = sum(file.file_size for file in files)
 
     quota = 100 * 1024 * 1024
 
-    storage_used_percent = int((total_size / quota) * 100) if quota > 0 else 0
+    storage_used_percent = int((total_size / quota) * 100) if quota else 0
 
     used_mb = round(total_size / (1024 * 1024), 2)
 
@@ -70,28 +69,15 @@ def download_file(request, file_id):
 
     file_url = file_obj.file.url
 
-    response = requests.get(file_url)
-
-    filename = file_obj.file.public_id.split("/")[-1] + "." + file_obj.file.format
-
-    http_response = HttpResponse(
-        response.content,
-        content_type="application/octet-stream"
-    )
-
-    http_response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-    # increase download count
     file_obj.download_count += 1
     file_obj.save()
 
-    # log access
     AccessLog.objects.create(
         file=file_obj,
         accessed_by=request.user
     )
 
-    return http_response
+    return redirect(file_url)
 
 
 # ----------------------------
@@ -102,7 +88,10 @@ def download_file(request, file_id):
 def delete_file(request, file_id):
 
     try:
-        file_obj = File.objects.get(id=file_id, user=request.user)
+        file_obj = File.objects.get(
+            id=file_id,
+            user=request.user
+        )
     except File.DoesNotExist:
         raise Http404("File not found")
 
@@ -148,18 +137,7 @@ def share_download(request, token):
 
     file_url = file_obj.file.url
 
-    response = requests.get(file_url)
-
-    filename = file_obj.file.public_id.split("/")[-1] + "." + file_obj.file.format
-
-    http_response = HttpResponse(
-        response.content,
-        content_type="application/octet-stream"
-    )
-
-    http_response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
     file_obj.download_count += 1
     file_obj.save()
 
-    return http_response
+    return redirect(file_url)
