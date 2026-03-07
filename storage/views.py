@@ -69,6 +69,8 @@ def dashboard(request):
 
 
 
+
+
 @login_required
 def download_file(request, file_id):
 
@@ -84,7 +86,7 @@ def download_file(request, file_id):
 
     response = requests.get(file_url)
 
-    filename = file_obj.file.public_id.split("/")[-1]
+    filename = file_obj.file.name.split("/")[-1]
 
     http_response = HttpResponse(
         response.content,
@@ -163,7 +165,7 @@ def share_download(request, token):
 
     response = requests.get(file_url)
 
-    filename = file_obj.file.public_id.split("/")[-1]
+    filename = file_obj.file.name.split("/")[-1]
 
     http_response = HttpResponse(
         response.content,
