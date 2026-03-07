@@ -1,11 +1,13 @@
 import os
-
-from django.shortcuts import render, redirect
+from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.http import Http404
-
 from .models import File, AccessLog
+
+
+
+
 
 
 # ----------------------------
@@ -59,15 +61,6 @@ def dashboard(request):
 # ----------------------------
 # Download file
 # ----------------------------
-
-from django.shortcuts import redirect
-
-from django.shortcuts import redirect
-from django.http import Http404
-from .models import File, AccessLog
-
-@login_required
-from django.shortcuts import redirect
 
 @login_required
 def download_file(request, file_id):
@@ -142,7 +135,7 @@ def register(request):
 # Share download link
 # ----------------------------
 
-from django.shortcuts import redirect
+
 
 def share_download(request, token):
 
